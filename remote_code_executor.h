@@ -20,6 +20,37 @@ public:
 
 private:
 
+    static HANDLE CreateThreadInVictim(HANDLE hVictim, LPVOID entry, LPVOID params) {
+        HANDLE hThread = CreateRemoteThread(
+            hVictim,
+            NULL, 0,
+            (LPTHREAD_START_ROUTINE)entry,
+            params,
+            0, NULL);
+
+        if (!hThread) {
+            throw std::runtime_error("Can't create remote thread: "
+                + std::to_string(GetLastError()));
+        }
+        return hThread;
+    }
+
+    static LPVOID GetLoadLibraryFunc() {
+        const std::string module = "kernel32.dll";
+        const std::string proc = "LoadLibraryW";
+
+        HMODULE hModule = GetModuleHandleA(module.data());
+        if (!hModule) {
+            throw std::runtime_error("Can't get kernel32.dll");
+        }
+
+        LPVOID load_library = GetProcAddress(hModule, proc.data());
+        if (!load_library) {
+            throw std::runtime_error("Can't get " + proc);
+        }
+        return load_library;
+    }
+
     static void WriteToVictimMemory(HANDLE hVictim, LPVOID address
         , LPCVOID data_buffer, SIZE_T data_size) {
         if (!hVictim) {

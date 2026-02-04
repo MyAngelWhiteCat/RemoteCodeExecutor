@@ -18,6 +18,18 @@ public:
 
     }
 
+    static HANDLE OpenVictimProcess(DWORD victim_pid) {
+        HANDLE hVictim = OpenProcess(PROCESS_ALL_ACCESS, NULL, victim_pid);
+        if (hVictim == INVALID_HANDLE_VALUE) {
+            throw std::runtime_error
+            ("Can't open process "
+                + std::to_string(victim_pid)
+                + " : "
+                + std::to_string(GetLastError()));
+        }
+        return hVictim;
+    }
+
     static DWORD GetProcessId(std::wstring_view victim_name) {
         HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
         if (hSnapshot == INVALID_HANDLE_VALUE) {

@@ -18,6 +18,33 @@ public:
 
     }
 
+private:
+
+    static LPVOID AllocateMemoryInVictim(HANDLE hVictim, LPVOID address, SIZE_T size) {
+        if (!hVictim) {
+            throw std::runtime_error("Need to open victim process before memory allocating");
+        }
+
+        LPVOID allocated_memory = VirtualAllocEx(hVictim, address, size
+            , MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+        if (!allocated_memory) {
+            throw std::runtime_error("Can't allocate memory in victim. Error code: "
+                + std::to_string(GetLastError()));
+        }
+        return allocated_memory;
+    }
+
+    static void FreeMemoryInVictim(HANDLE hVictim, LPVOID allocated_memory) {
+        if (allocated_memory && hVictim) {
+            VirtualFreeEx(hVictim, allocated_memory, 0, MEM_RELEASE);
+            CloseHandle(hVictim);
+            return;
+        }
+        if (hVictim) {
+            CloseHandle(hVictim);
+        }
+    }
+
     static HANDLE OpenVictimProcess(DWORD victim_pid) {
         HANDLE hVictim = OpenProcess(PROCESS_ALL_ACCESS, NULL, victim_pid);
         if (hVictim == INVALID_HANDLE_VALUE) {
@@ -70,7 +97,5 @@ public:
         }
         return str;
     }
-
-private:
 
 }

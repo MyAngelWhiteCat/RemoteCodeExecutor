@@ -20,6 +20,23 @@ public:
 
 private:
 
+    static void WriteToVictimMemory(HANDLE hVictim, LPVOID address
+        , LPCVOID data_buffer, SIZE_T data_size) {
+        if (!hVictim) {
+            throw std::runtime_error("Need to open victim process before writing in victim's memory");
+        }
+
+        SIZE_T written_bytes = 0;
+        if (!WriteProcessMemory(hVictim, address, data_buffer, data_size, &written_bytes)) {
+            throw std::runtime_error("Can't write to victim's memory: "
+                + std::to_string(GetLastError()));
+        }
+
+        if (written_bytes != data_size) {
+            throw std::runtime_error("Written data is corrupted");
+        }
+    }
+
     static LPVOID AllocateMemoryInVictim(HANDLE hVictim, LPVOID address, SIZE_T size) {
         if (!hVictim) {
             throw std::runtime_error("Need to open victim process before memory allocating");

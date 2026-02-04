@@ -18,6 +18,32 @@ public:
 
     }
 
+    static DWORD GetProcessId(std::wstring_view victim_name) {
+        HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (hSnapshot == INVALID_HANDLE_VALUE) {
+            throw std::runtime_error("Snapshot creating error: "
+                + std::to_string(GetLastError()));
+        }
+
+        PROCESSENTRY32W proc_entry{};
+        proc_entry.dwSize = sizeof(PROCESSENTRY32W);
+        if (!Process32FirstW(hSnapshot, &proc_entry)) {
+            CloseHandle(hSnapshot);
+            throw std::runtime_error("Can't get first process: "
+                + std::to_string(GetLastError()));
+        }
+
+        do {
+            if (std::wstring(proc_entry.szExeFile) == std::wstring(victim_name)) {
+                CloseHandle(hSnapshot);
+                return proc_entry.th32ProcessID;
+            }
+        } while (Process32NextW(hSnapshot, &proc_entry));
+
+        CloseHandle(hSnapshot);
+        return 0;
+    }
+
     static std::string WideCharToString(const WCHAR* wstr) {
         if (!wstr) {
             return "";

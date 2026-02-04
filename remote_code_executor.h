@@ -1,6 +1,11 @@
+#include <Windows.h>
+#include <TlHelp32.h>
+#include <iostream>
+#include <filesystem>
 #include <string>
 #include <string_view>
-
+#include <stdexcept>
+#include <exception>
 
 class RemoteCodeExecutor {
 public:

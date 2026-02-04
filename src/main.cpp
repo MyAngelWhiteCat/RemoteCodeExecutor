@@ -5,18 +5,19 @@
 
 #include "remote_code_executor.h"
 
-int main() {
-    std::wstring proc_name = L"test.exe";
-    std::wstring dll_name = L"test.dll";
-    std::filesystem::path dll_path = std::filesystem::current_path() / dll_name;
+int main(int argc, wchar_t** argv) {
+    if (argc != 3) {
+        std::wcout << "Usage: " << argv[0] << " <dll> <process>" << std::endl;
+    }
+    std::filesystem::path dll_path(argv[1]);
     if (!std::filesystem::exists(dll_path)) {
-        std::wcout << dll_name << " is not exist" << std::endl;
+        std::wcout << argv[1] << " is not exist" << std::endl;
         return 1;
     }
 
     try {
-        RemoteCodeExecutor::InjectDLL(dll_path.wstring(), proc_name);
-        std::wcout << "Successfully injected " << dll_name << " to " << proc_name << std::endl;
+        RemoteCodeExecutor::InjectDLL(dll_path.wstring(), argv[2]);
+        std::wcout << "Successfully injected " << argv[1] << " to " << argv[2] << std::endl;
     }
     catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;

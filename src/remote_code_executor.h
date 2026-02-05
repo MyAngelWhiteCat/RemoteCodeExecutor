@@ -27,6 +27,7 @@ private:
     static HANDLE CreateThreadInVictim(HANDLE hVictim, LPVOID entry, LPVOID params);
 
     static LPVOID GetLoadLibraryFunc();
-    static std::string WideCharToString(const WCHAR* wstr);
 
+    static std::string WideCharToString(const WCHAR* wstr);
+    static std::wstring StringToWideChar(std::string_view str);
 };

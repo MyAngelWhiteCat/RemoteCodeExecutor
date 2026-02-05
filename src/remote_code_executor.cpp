@@ -179,3 +179,13 @@ std::string RemoteCodeExecutor::WideCharToString(const WCHAR* wstr) {
     }
     return str;
 }
+
+std::wstring RemoteCodeExecutor::StringToWideChar(std::string_view str) {
+    if (str.empty()) {
+        return L"";
+    }
+    int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.data(), -1, nullptr, 0);
+    wchar_t* wide_str = new wchar_t[size_needed];
+    MultiByteToWideChar(CP_UTF8, 0, str.data(), -1, wide_str, size_needed);
+    return wide_str;
+}

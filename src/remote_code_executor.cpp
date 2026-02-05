@@ -147,6 +147,14 @@ LPVOID RemoteCodeExecutor::AllocateMemoryInVictim(HANDLE hVictim, LPVOID address
     return allocated_memory;
 }
 
+void RemoteCodeExecutor::MakeVictimMemoryExecutable(HANDLE hVictim, LPVOID address, SIZE_T size) {
+    PDWORD old_protect{ 0 };
+    if (!VirtualProtectEx(hVictim, address, size, PAGE_EXECUTE_READ, old_protect)) {
+        throw std::runtime_error("Can't change victim memory to RX" 
+            + std::to_string(GetLastError()));
+    }
+}
+
 void RemoteCodeExecutor::FreeMemoryInVictim(HANDLE hVictim, LPVOID allocated_memory, HANDLE hThread) {
     if (allocated_memory && hVictim) {
         VirtualFreeEx(hVictim, allocated_memory, 0, MEM_RELEASE);

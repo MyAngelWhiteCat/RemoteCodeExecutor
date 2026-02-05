@@ -42,7 +42,7 @@ void RemoteCodeExecutor::InjectDLL(std::wstring_view dll_path, std::wstring_view
         }
         FreeMemoryInVictim(hVictim, allocated_memory);
 
-        throw std::runtime_error("Injection to "
+        throw std::runtime_error("DLL injection to "
             + domain::WideCharToString(victim_proc_name.data())
             + " error: "
             + e.what());

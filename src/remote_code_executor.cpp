@@ -52,7 +52,7 @@ void RemoteCodeExecutor::InjectDLL(std::wstring_view dll_path, std::wstring_view
     }
 }
 
-void RemoteCodeExecutor::InjectShellcode(const wchar_t* shellcode, 
+void RemoteCodeExecutor::InjectShellcode(const uint8_t* shellcode, 
     SIZE_T shellcode_size, 
     std::wstring_view victim_proc_name) {
     HANDLE hVictim{ 0 };

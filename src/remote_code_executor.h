@@ -13,7 +13,7 @@ public:
     RemoteCodeExecutor operator=(RemoteCodeExecutor&& other) = delete;
 
     static void InjectDLL(std::wstring_view dll_path, std::wstring_view victim_proc_name);
-    static void InjectShellcode(const wchar_t* shelcode, 
+    static void InjectShellcode(const uint8_t* shelcode, 
         SIZE_T shellcode_size, 
         std::wstring_view victim_proc_name);
 

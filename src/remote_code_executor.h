@@ -22,6 +22,7 @@ private:
     static HANDLE OpenVictimProcess(DWORD victim_pid);
 
     static LPVOID AllocateMemoryInVictim(HANDLE hVictim, LPVOID address, SIZE_T size);
+    static void MakeVictimMemoryExecutable(HANDLE hVictim, LPVOID address, SIZE_T size);
     static void FreeMemoryInVictim(HANDLE hVictim, LPVOID allocated_memory, HANDLE hThread);
     static void WriteToVictimMemory(HANDLE hVictim, LPVOID address
         , LPCVOID data_buffer, SIZE_T data_size);

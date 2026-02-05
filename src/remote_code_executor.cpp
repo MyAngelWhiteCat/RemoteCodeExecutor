@@ -47,6 +47,15 @@ void RemoteCodeExecutor::InjectDLL(std::wstring_view dll_path, std::wstring_view
             + " error: "
             + e.what());
     }
+
+    try {
+        FreeMemoryInVictim(hVictim, allocated_memory, hThread);
+}
+    catch (const std::exception& e) {
+        throw std::runtime_error("Error while cleaning resources in "
+            + domain::WideCharToString(victim_proc_name.data())
+            + e.what());
+    }
 }
 
 void RemoteCodeExecutor::InjectShellcode(const char* shelcode, std::wstring_view victim_proc_name) {
@@ -117,7 +126,7 @@ LPVOID RemoteCodeExecutor::AllocateMemoryInVictim(HANDLE hVictim, LPVOID address
     return allocated_memory;
 }
 
-void RemoteCodeExecutor::FreeMemoryInVictim(HANDLE hVictim, LPVOID allocated_memory) {
+void RemoteCodeExecutor::FreeMemoryInVictim(HANDLE hVictim, LPVOID allocated_memory, HANDLE hThread) {
     if (allocated_memory && hVictim) {
         VirtualFreeEx(hVictim, allocated_memory, 0, MEM_RELEASE);
         CloseHandle(hVictim);
@@ -125,6 +134,9 @@ void RemoteCodeExecutor::FreeMemoryInVictim(HANDLE hVictim, LPVOID allocated_mem
     }
     if (hVictim) {
         CloseHandle(hVictim);
+    }
+    if (hThread) {
+        CloseHandle(hThread);
     }
 }
 

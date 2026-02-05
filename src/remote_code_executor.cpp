@@ -1,4 +1,5 @@
 #include "remote_code_executor.h"
+#include "domain.h"
 
 #include <TlHelp32.h>
 #include <exception>
@@ -15,7 +16,7 @@ void RemoteCodeExecutor::InjectDLL(std::wstring_view dll_path, std::wstring_view
         DWORD pid = GetProcessId(victim_proc_name);
         if (!pid) {
             throw std::runtime_error("Can't find "
-                + WideCharToString(victim_proc_name.data())
+                + domain::WideCharToString(victim_proc_name.data())
                 + " process");
         }
 
@@ -42,7 +43,7 @@ void RemoteCodeExecutor::InjectDLL(std::wstring_view dll_path, std::wstring_view
         FreeMemoryInVictim(hVictim, allocated_memory);
 
         throw std::runtime_error("Injection to "
-            + WideCharToString(victim_proc_name.data())
+            + domain::WideCharToString(victim_proc_name.data())
             + " error: "
             + e.what());
     }
@@ -163,29 +164,4 @@ DWORD RemoteCodeExecutor::GetProcessId(std::wstring_view victim_name) {
 
     CloseHandle(hSnapshot);
     return 0;
-}
-
-std::string RemoteCodeExecutor::WideCharToString(const WCHAR* wstr) {
-    if (!wstr) {
-        return "";
-    }
-
-    int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, nullptr, 0, nullptr, nullptr);
-    std::string str(size_needed, 0);
-    WideCharToMultiByte(CP_UTF8, 0, wstr, -1, &str[0], size_needed, nullptr, nullptr);
-
-    if (!str.empty() && str.back() == '\0') {
-        str.pop_back();
-    }
-    return str;
-}
-
-std::wstring RemoteCodeExecutor::StringToWideChar(std::string_view str) {
-    if (str.empty()) {
-        return L"";
-    }
-    int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.data(), -1, nullptr, 0);
-    wchar_t* wide_str = new wchar_t[size_needed];
-    MultiByteToWideChar(CP_UTF8, 0, str.data(), -1, wide_str, size_needed);
-    return wide_str;
 }

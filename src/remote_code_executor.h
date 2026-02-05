@@ -13,7 +13,9 @@ public:
     RemoteCodeExecutor operator=(RemoteCodeExecutor&& other) = delete;
 
     static void InjectDLL(std::wstring_view dll_path, std::wstring_view victim_proc_name);
-    static void InjectShellcode(const char* shelcode, std::wstring_view victim_proc_name);
+    static void InjectShellcode(const wchar_t* shelcode, 
+        SIZE_T shellcode_size, 
+        std::wstring_view victim_proc_name);
 
 private:
     static DWORD GetProcessId(std::wstring_view victim_name);
@@ -27,7 +29,4 @@ private:
     static HANDLE CreateThreadInVictim(HANDLE hVictim, LPVOID entry, LPVOID params);
 
     static LPVOID GetLoadLibraryFunc();
-
-    static std::string WideCharToString(const WCHAR* wstr);
-    static std::wstring StringToWideChar(std::string_view str);
 };

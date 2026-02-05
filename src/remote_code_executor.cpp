@@ -33,15 +33,9 @@ void RemoteCodeExecutor::InjectDLL(std::wstring_view dll_path, std::wstring_view
         if (exit_code == 0) {
             throw std::runtime_error("LoadLibrary failed in victim process");
         }
-        CloseHandle(hThread);
-        FreeMemoryInVictim(hVictim, allocated_memory);
     }
     catch (const std::exception& e) {
-        if (hThread) {
-            CloseHandle(hThread);
-        }
-        FreeMemoryInVictim(hVictim, allocated_memory);
-
+        FreeMemoryInVictim(hVictim, allocated_memory, hThread);
         throw std::runtime_error("DLL injection to "
             + domain::WideCharToString(victim_proc_name.data())
             + " error: "
@@ -50,7 +44,7 @@ void RemoteCodeExecutor::InjectDLL(std::wstring_view dll_path, std::wstring_view
 
     try {
         FreeMemoryInVictim(hVictim, allocated_memory, hThread);
-}
+    }
     catch (const std::exception& e) {
         throw std::runtime_error("Error while cleaning resources in "
             + domain::WideCharToString(victim_proc_name.data())
@@ -58,8 +52,35 @@ void RemoteCodeExecutor::InjectDLL(std::wstring_view dll_path, std::wstring_view
     }
 }
 
-void RemoteCodeExecutor::InjectShellcode(const char* shelcode, std::wstring_view victim_proc_name) {
+void RemoteCodeExecutor::InjectShellcode(const wchar_t* shellcode, 
+    SIZE_T shellcode_size, 
+    std::wstring_view victim_proc_name) {
+    HANDLE hVictim{ 0 };
+    LPVOID allocated_memory{ 0 };
+    HANDLE hThread{ 0 };
+    try {
+        hVictim = OpenVictimProcess(GetProcessId(victim_proc_name));
+        SIZE_T bytes_needed = (shellcode_size + 1) * sizeof(wchar_t);
+        allocated_memory = AllocateMemoryInVictim(hVictim, NULL, bytes_needed);
+        WriteToVictimMemory(hVictim, allocated_memory, shellcode, bytes_needed);
+        hThread = CreateThreadInVictim(hVictim, allocated_memory, NULL);
+    }
+    catch (const std::exception& e) {
+        FreeMemoryInVictim(hVictim, allocated_memory, hThread);
+        throw std::runtime_error("Shellcode injection to "
+            + domain::WideCharToString(victim_proc_name.data())
+            + " error "
+            + e.what());
+    }
 
+    try {
+        FreeMemoryInVictim(hVictim, allocated_memory, hThread);
+    }
+    catch (const std::exception& e) {
+        throw std::runtime_error("Error while cleaning resources in "
+            + domain::WideCharToString(victim_proc_name.data())
+            + e.what());
+    }
 }
 
 

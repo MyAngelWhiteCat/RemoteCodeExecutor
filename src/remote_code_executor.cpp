@@ -151,6 +151,9 @@ void RemoteCodeExecutor::FreeMemoryInVictim(HANDLE hVictim, LPVOID allocated_mem
     if (allocated_memory && hVictim) {
         VirtualFreeEx(hVictim, allocated_memory, 0, MEM_RELEASE);
         CloseHandle(hVictim);
+        if (hThread) {
+            CloseHandle(hThread);
+        }
         return;
     }
     if (hVictim) {

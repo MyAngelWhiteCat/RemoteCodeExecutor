@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     try {
         RemoteCodeExecutor::InjectDLL(dll_path.wstring(),
             domain::StringToWideChar(argv[2]));
-        std::wcout << "Successfully injected " << " to " << argv[2] << std::endl;
+        std::wcout << "Successfully injected " << argv[1] << " to " << argv[2] << std::endl;
     }
     catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;

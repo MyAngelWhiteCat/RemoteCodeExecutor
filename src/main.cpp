@@ -1,23 +1,42 @@
 #include <iostream>
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <exception>
 
 #include "domain.h"
 #include "remote_code_executor.h"
+#include <vector>
+#include <cstdint>
 
 
 int main(int argc, char** argv) {
-    std::filesystem::path dll_path(std::filesystem::current_path() / argv[1]);
+    if (argc != 4) {
+        std::cout << "Usage: " << argv[0] << " <dll/sc> <dll/shellcode file> <victim process>";
+    }
+    std::filesystem::path dll_path(std::filesystem::current_path() / argv[2]);
     if (!std::filesystem::exists(dll_path)) {
-        std::wcout << "DLL do not exist " << dll_path.wstring() << std::endl;
+        std::wcout << "file do not exist " << dll_path.wstring() << std::endl;
         return 1;
     }
 
     try {
-        RemoteCodeExecutor::InjectDLL(dll_path.wstring(),
-            domain::StringToWideChar(argv[2]));
-        std::wcout << "Successfully injected " << argv[1] << " to " << argv[2] << std::endl;
+        if (argv[1] == "dll") {
+            RemoteCodeExecutor::InjectDLL(dll_path.wstring(),
+                domain::StringToWideChar(argv[2]));
+        }
+        else if (argv[1] == "sc") {
+            std::ifstream shellcode(dll_path);
+            shellcode.seekg(std::ios::end);
+            size_t size = shellcode.tellg();
+            shellcode.seekg(std::ios::beg);
+
+            std::vector<uint8_t> buffer(size);
+            shellcode.read(reinterpret_cast<char*>(buffer.data()), size);
+            RemoteCodeExecutor::InjectShellcode(buffer.data(), size,
+                domain::StringToWideChar(argv[3]));
+        }
+        std::wcout << "Successfully inject " << argv[1] << " to " << argv[3] << std::endl;
     }
     catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;

@@ -16,11 +16,11 @@ Usage:
 
 DLL injecting
 ```
-./RemoteCodeExecutor any.dll anyprocess
+./RemoteCodeExecutor dll any.dll anyprocess
 ```
 
 Shellcode injecting
 ```
-work in progress
+./RemoteCodeExecutor sc any_shellcode.txt anyprocess
 ```
 

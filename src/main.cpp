@@ -39,6 +39,6 @@ int main(int argc, char** argv) {
         std::wcout << "Successfully inject " << argv[1] << " to " << argv[3] << std::endl;
     }
     catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "Injection error: " << e.what() << std::endl;
     }
 }
